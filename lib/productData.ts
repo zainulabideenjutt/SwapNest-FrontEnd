@@ -64,11 +64,28 @@ export const allProducts = [
   },
 ]
 
+interface ProductImage {
+    id: string;
+    product: string;
+    image_url: string;
+    caption: string;
+    order: number;
+    created_at: string;
+}
+
 export interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  image: string;
-  description: string;
+    id: string;
+    seller: string;
+    title: string;
+    description: string;
+    price: number;
+    condition: "New" | "Used";
+    location: string | null;
+    category_name: string;
+    is_active: boolean;
+    is_sold: boolean;
+    bought_by: string | null;
+    created_at: string;
+    updated_at: string;
+    images: ProductImage[];
 }

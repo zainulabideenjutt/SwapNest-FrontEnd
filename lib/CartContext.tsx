@@ -2,19 +2,18 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
-
+import type { ProductImage, Product } from "./apiClient"
 interface CartItem {
-    id: number
-    name: string
+    id: string
+    title: string
     price: number
-    quantity: number
-    image: string
+    images: ProductImage[]
 }
 
 interface CartContextType {
     cart: CartItem[]
-    addToCart: (item: CartItem) => void
-    removeFromCart: (id: number) => void
+    addToCart: (item: Product) => void
+    removeFromCart: (id: string) => void
     clearCart: () => void
     getCartTotal: () => number
     getCartCount: () => number
@@ -37,31 +36,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [cart, setCart] = useState<CartItem[]>([])
     const [isCartOpen, setIsCartOpen] = useState(false)
 
-    const addToCart = useCallback((item: CartItem) => {
-        setCart((prevCart) => {
-            const existingItem = prevCart.find((cartItem) => cartItem.id === item.id)
-            if (existingItem) {
-                return prevCart.map((cartItem) =>
-                    cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
-                )
-            }
-            return [...prevCart, { ...item, quantity: 1 }]
-        })
+    const addToCart = useCallback((item: Product) => {
+        setCart((prevCart) => [...prevCart, {
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            images: item.images
+        }])
     }, [])
 
-    const removeFromCart = useCallback((id: number) => {
-        setCart((prevCart) =>
-            prevCart.reduce((acc, item) => {
-                if (item.id === id) {
-                    if (item.quantity > 1) {
-                        acc.push({ ...item, quantity: item.quantity - 1 })
-                    }
-                } else {
-                    acc.push(item)
-                }
-                return acc
-            }, [] as CartItem[]),
-        )
+    const removeFromCart = useCallback((id: string) => {
+        setCart((prevCart) => prevCart.filter((item) => item.id !== id))
     }, [])
 
     const clearCart = useCallback(() => {
@@ -69,11 +54,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [])
 
     const getCartTotal = useCallback(() => {
-        return cart.reduce((total, item) => total + item.price * item.quantity, 0)
+        return cart.reduce((total, item) => total + Number(item.price), 0)
     }, [cart])
 
     const getCartCount = useCallback(() => {
-        return cart.reduce((count, item) => count + item.quantity, 0)
+        return cart.length
     }, [cart])
 
     const openCart = useCallback(() => {

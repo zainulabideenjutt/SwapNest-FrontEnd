@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 // import { useCart } from "@/lib/CartContext";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,17 +27,26 @@ import { User, Menu, Search, ShoppingCart } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useCart } from "@/lib/CartContext"
 import CartDrawer from "./CartDrawer";
-
+import { useMutation } from "@tanstack/react-query";
+import { toast } from 'sonner'
+import apiClient from "@/lib/apiClient";
 const Header: React.FC = () => {
     const { openCart } = useCart();
     const router = useRouter();
     const [isScrolled, setIsScrolled] = useState(false);
     // Optional: If you wish to show a cart count badge, you can manage a cartCount state.
     const [cartCount] = useState(3); // Example cart count
-
+    const logoutMutation = useMutation({
+        mutationFn: () => apiClient.auth.logout(),
+        onSuccess: () => {
+            toast.success('Logged out successfully');
+            router.push('/login');
+        },
+    });
     const handleScroll = useCallback(() => {
         setIsScrolled(window.scrollY > 50);
     }, []);
+
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll, { passive: true });
@@ -87,7 +98,7 @@ const Header: React.FC = () => {
                                 Profile
                             </DropdownMenuItem>
                             <DropdownMenuItem>Orders</DropdownMenuItem>
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => logoutMutation.mutate()}>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <div onClick={openCart}>

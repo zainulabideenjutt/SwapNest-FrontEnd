@@ -5,6 +5,7 @@ import HeroSection from "@/components/HeroSection";
 import FeaturedCategories from "@/components/CategoriesSection";
 import ProductsSection from "@/components/ProductsSection";
 import { allProducts } from "@/lib/productData";
+
 export default function Home() {
   return (
     <>
@@ -19,7 +20,7 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeaturedCategories />
-        <ProductsSection searchResults={allProducts} />
+        <ProductsSection />
       </main>
       <Footer />
     </>

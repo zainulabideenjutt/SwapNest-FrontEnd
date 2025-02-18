@@ -6,7 +6,7 @@ import { ShoppingCart, MessageCircle, X } from "lucide-react"
 import Image from "next/image"
 import { useCart } from "@/lib/CartContext"
 import { toast } from "sonner"
-import type { Product } from "@/lib/productData"
+import type { Product } from "@/lib/apiClient"
 
 interface ProductDetailModalProps {
     product: Product | null
@@ -20,8 +20,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
     if (!isOpen || !product) return null
 
     const handleAddToCart = () => {
-        addToCart({ ...product, quantity: 1 })
-        toast(`${product.name} has been added to your cart.`)
+        addToCart({ ...product })
+        toast(`${product.title} has been added to your cart.`)
         openCart()
         onClose()
     }
@@ -45,8 +45,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
 
                 <div className="relative w-full aspect-video rounded-md overflow-hidden mb-4">
                     <Image
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name}
+                        src={product.images[0].image_url || "/placeholder.svg"}
+                        alt={product.title}
                         fill
                         style={{ objectFit: "contain" }}
                         className="rounded-md"
@@ -54,9 +54,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                 </div>
 
                 <h2 id="modal-title" className="text-xl font-bold">
-                    {product.name}
+                    {product.title}
                 </h2>
-                <p className="text-sm text-muted-foreground">{product.category}</p>
+                <p className="text-sm text-muted-foreground">{product.category_name}</p>
                 <p className="text-lg font-bold mt-2">${product.price}</p>
                 <p id="modal-description" className="text-sm text-muted-foreground mt-4">
                     {product.description}

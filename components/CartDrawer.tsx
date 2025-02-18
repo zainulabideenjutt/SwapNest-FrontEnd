@@ -45,34 +45,25 @@ const CartDrawer: React.FC = () => {
                                         <div className="flex items-center">
                                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 mr-4">
                                                 <Image
-                                                    src={item.image || "/placeholder.svg"}
-                                                    alt={item.name}
+                                                    src={item.images[0].image_url || "/placeholder.svg"}
+                                                    alt={item.title}
                                                     width={64}
                                                     height={64}
                                                     className="h-full w-full object-cover object-center"
                                                 />
                                             </div>
                                             <div>
-                                                <h3 className="text-sm font-medium">{item.name}</h3>
-                                                <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                                                <h3 className="text-sm font-medium">{item.title}</h3>
+                                                <p className="text-sm text-muted-foreground">${item.price}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)}>
-                                                <Minus className="h-4 w-4" />
-                                            </Button>
-                                            <span>{item.quantity}</span>
-                                            <Button variant="outline" size="icon" onClick={() => addToCart(item)}>
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
                                             <Button
                                                 variant="destructive"
                                                 size="icon"
                                                 onClick={() => {
-                                                    for (let i = 0; i < item.quantity; i++) {
-                                                        removeFromCart(item.id)
-                                                    }
-                                                    toast.success(`${item.name} removed from cart`)
+                                                    removeFromCart(item.id)
+                                                    toast.success(`${item.title} removed from cart`)
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -84,7 +75,7 @@ const CartDrawer: React.FC = () => {
                             <div className="mt-4 space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span className="font-semibold">Total:</span>
-                                    <span>${getCartTotal().toFixed(2)}</span>
+                                    <span>${getCartTotal()}</span>
                                 </div>
                                 <Button
                                     className="w-full"

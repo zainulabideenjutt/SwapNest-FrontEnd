@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useQuery } from '@tanstack/react-query'
 import { useState, useMemo, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,23 +10,15 @@ import Select from "react-select"
 import Image from "next/image"
 import { useCart } from "@/lib/CartContext"
 import { toast } from "sonner"
-import type { Product } from "@/lib/productData"
+import type { Product, Category } from '@/lib/apiClient'
 import ProductDetailModal from "./ProductDetailModal"
 import { Search } from "lucide-react"
+import apiClient from "@/lib/apiClient"
+import { AxiosResponse } from "axios"
 
-const categoryOptions = [
-    { value: "All", label: "All" },
-    { value: "Electronics", label: "Electronics" },
-    { value: "Clothing", label: "Clothing" },
-    { value: "Home", label: "Home" },
-    { value: "Books", label: "Books" },
-]
 
-interface ProductsSectionProps {
-    searchResults: Product[]
-}
 
-const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
+const ProductsSection: React.FC = () => {
     const { addToCart, openCart } = useCart()
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000])
@@ -34,21 +27,42 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
     const [searchTerm, setSearchTerm] = useState("")
     const productsPerPage = 12
 
+    const { isLoading: isProductLoading, isError: isProductError, data: Products, error: productError } = useQuery<Product[]>({
+        queryKey: ['Products'],
+        queryFn: apiClient.products.list,
+    })
+    const { isLoading: isCategorytLoading, isError: isPCategoryError, data: Categories, error: CategoryError } = useQuery<Category[]>({
+        queryKey: ['Categories'],
+        queryFn: apiClient.categories.list,
+    })
+
+    const categoryOptions = [
+        { value: "All", label: "All" },  // Static option
+        ...Categories?.map((category) => ({
+            value: category.name,
+            label: category.name
+        })) || [] // Ensure it doesn't break if Categories is undefined
+    ];
+
+
+
     // Filter products based on search, category, and price range
     const filteredProducts = useMemo(() => {
-        return searchResults.filter((product) => {
-            const matchesSearch = product.name
+        if (!Products) return [];
+        return Products.filter((product) => {
+
+            const matchesSearch = product.title
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase())
             const matchesCategory =
                 !selectedCategory ||
                 selectedCategory === "All" ||
-                product.category === selectedCategory
+                product.category_name === selectedCategory
             const matchesPrice =
                 product.price >= priceRange[0] && product.price <= priceRange[1]
             return matchesSearch && matchesCategory && matchesPrice
         })
-    }, [searchResults, selectedCategory, priceRange, searchTerm])
+    }, [Products, selectedCategory, priceRange, searchTerm])
 
     const totalPages = useMemo(
         () => Math.ceil(filteredProducts.length / productsPerPage),
@@ -66,12 +80,26 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
 
     const handleAddToCart = useCallback(
         (product: Product) => {
-            addToCart({ ...product, quantity: 1 })
-            toast.success(`${product.name} added to cart`)
+            addToCart({ ...product })
+            toast.success(`${product.title} added to cart`)
             openCart()
         },
         [addToCart, openCart]
     )
+    if (isProductLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (isProductError) {
+        return <div>Error: {productError.message}</div>;
+    }
+    if (isCategorytLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (isPCategoryError) {
+        return <div>Error: {CategoryError.message}</div>;
+    }
 
     return (
         <section className="py-12 bg-background">
@@ -157,7 +185,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
 
                     {/* Products Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {paginatedProducts.map((product) => (
+                        {paginatedProducts.map((product: Product) => (
                             <Card
                                 key={product.id}
                                 className="p-2 transition-transform duration-300 hover:scale-105"
@@ -168,8 +196,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
                                         onClick={() => setSelectedProduct(product)}
                                     >
                                         <Image
-                                            src={product.image || "/placeholder.svg"}
-                                            alt={product.name}
+                                            src={product.images[0].image_url || "/placeholder.svg"}
+                                            alt={product.title}
                                             fill
                                             style={{ objectFit: "contain" }}
                                             className="rounded-md"
@@ -179,9 +207,9 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ searchResults }) => {
                                             }}
                                         />
                                     </div>
-                                    <h3 className="text-sm font-semibold">{product.name}</h3>
+                                    <h3 className="text-sm font-semibold">{product.title}</h3>
                                     <p className="text-xs text-muted-foreground">
-                                        {product.category}
+                                        {product.category_name}
                                     </p>
                                     <p className="text-sm font-bold mt-1">${product.price}</p>
                                     <Button
