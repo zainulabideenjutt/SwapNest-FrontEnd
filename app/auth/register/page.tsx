@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import apiClient, { RegisterDataTypes } from '../../lib/apiClient';
+import apiClient, { RegisterDataTypes } from '../../../lib/apiClient';
 import { toast } from 'sonner';
 
 const RegisterPage = () => {
@@ -49,7 +49,7 @@ const RegisterPage = () => {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="Email" 
+          placeholder="Email"
           required
         />
         <br />

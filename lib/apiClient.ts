@@ -57,7 +57,7 @@ interface LoginResponse {
     user: RegisterResponse;
 }
 
-interface LoginDataTypes{
+export interface LoginDataTypes{
     email: string;
     password: string;
 }

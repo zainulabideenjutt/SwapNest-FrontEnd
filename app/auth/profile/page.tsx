@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import apiClient from '../../lib/apiClient';
+import apiClient from '../../../lib/apiClient';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const ProfilePage = () => {
     mutationFn: () => apiClient.auth.logout(),
     onSuccess: () => {
       toast.success('Logged out successfully');
-      router.push('/auth/login');
+      router.push('/login');
     },
   });
 
@@ -33,9 +33,9 @@ const ProfilePage = () => {
         <div className="space-y-4">
           <div>
             {user.profile_picture_url && (
-              <img 
-                src={user.profile_picture_url} 
-                alt="Profile" 
+              <img
+                src={user.profile_picture_url}
+                alt="Profile"
                 className="w-32 h-32 rounded-full"
               />
             )}
