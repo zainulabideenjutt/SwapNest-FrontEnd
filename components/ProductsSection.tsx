@@ -16,8 +16,6 @@ import { Search } from "lucide-react"
 import apiClient from "@/lib/apiClient"
 import { AxiosResponse } from "axios"
 
-
-
 const ProductsSection: React.FC = () => {
     const { addToCart, openCart } = useCart()
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -43,8 +41,6 @@ const ProductsSection: React.FC = () => {
             label: category.name
         })) || [] // Ensure it doesn't break if Categories is undefined
     ];
-
-
 
     // Filter products based on search, category, and price range
     const filteredProducts = useMemo(() => {
@@ -80,9 +76,11 @@ const ProductsSection: React.FC = () => {
 
     const handleAddToCart = useCallback(
         (product: Product) => {
-            addToCart({ ...product })
-            toast.success(`${product.title} added to cart`)
-            openCart()
+            const wasAdded = addToCart({ ...product })
+            if (wasAdded) {
+                toast.success(`${product.title} added to cart`)
+                openCart()
+            }
         },
         [addToCart, openCart]
     )

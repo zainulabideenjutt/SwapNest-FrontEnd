@@ -3,8 +3,8 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } f
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
 const instance: AxiosInstance = axios.create({
-	baseURL: API_BASE_URL,
-    withCredentials:true
+    baseURL: API_BASE_URL,
+    withCredentials: true
 });
 
 let isRefreshing = false;
@@ -47,8 +47,8 @@ interface BaseUserResponse {
     reports: any[];
 }
 
-export interface RegisterResponse extends BaseUserResponse {}
-export interface ProfileResponse extends BaseUserResponse {}
+export interface RegisterResponse extends BaseUserResponse { }
+export interface ProfileResponse extends BaseUserResponse { }
 
 interface LoginResponse {
     detail: string;
@@ -57,7 +57,7 @@ interface LoginResponse {
     user: RegisterResponse;
 }
 
-export interface LoginDataTypes{
+export interface LoginDataTypes {
     email: string;
     password: string;
 }
@@ -86,11 +86,11 @@ export interface ProductImage {
     created_at: string;
 }
 export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
+    id: string;
+    name: string;
+    description: string;
+    created_at: string; // ISO date string
+    updated_at: string; // ISO date string
 }
 
 
@@ -111,9 +111,17 @@ export interface Product {
     images: ProductImage[];
 }
 
+export interface DbCartItem {
+    id: string;
+    product: Product;
+    created_at: string;
+}
+
+
+
 const apiClient = {
     auth: {
-        register: async (data:RegisterDataTypes): Promise<AxiosResponse<RegisterResponse>> => {
+        register: async (data: RegisterDataTypes): Promise<AxiosResponse<RegisterResponse>> => {
             return await instance.post('/auth/register', data);
         },
         login: async (data: LoginDataTypes): Promise<AxiosResponse<LoginResponse>> => {
@@ -125,7 +133,7 @@ const apiClient = {
         refreshToken: async (): Promise<AxiosResponse> => {
             return await instance.post('/auth/token/refresh');
         },
-        passwordReset: async (data: {email:string} ): Promise<AxiosResponse< {detail: string} >> => {
+        passwordReset: async (data: { email: string }): Promise<AxiosResponse<{ detail: string }>> => {
             return await instance.post('/auth/password-reset', data);
         },
         profile: async (): Promise<AxiosResponse<ProfileResponse>> => {
@@ -152,11 +160,11 @@ const apiClient = {
     },
     categories: {
         list: async (): Promise<Category[]> => {
-            const response= await instance.get('/categories');
+            const response = await instance.get('/categories');
             return response.data;
         },
         create: async (data: any): Promise<Category[]> => {
-            const response= await instance.post('/categories', data);
+            const response = await instance.post('/categories', data);
             return response.data;
         },
         update: async (id: string | number, data: any): Promise<AxiosResponse> => {
@@ -178,7 +186,7 @@ const apiClient = {
         list: async (): Promise<AxiosResponse> => {
             return await instance.get('/reports');
         },
-        create: async (data: any): Promise<AxiosResponse> => {
+        create: async (data: { product_id: string }): Promise<AxiosResponse> => {
             return await instance.post('/reports', data);
         },
         update: async (id: string | number, data: any): Promise<AxiosResponse> => {
@@ -194,35 +202,36 @@ const apiClient = {
         },
     },
     messages: {
-    list: async (conversationId?: string | number): Promise<AxiosResponse> => {
-        const params = conversationId ? { conversation: conversationId } : {};
-        return await instance.get('/messages/', { params });
+        list: async (conversationId?: string | number): Promise<AxiosResponse> => {
+            const params = conversationId ? { conversation: conversationId } : {};
+            return await instance.get('/messages/', { params });
+        },
+        create: async (data: { conversation: string | number, content: string }): Promise<AxiosResponse> => {
+            return await instance.post('/messages/', data);
+        },
+        update: async (id: string | number, data: any): Promise<AxiosResponse> => {
+            return await instance.put(`/messages/${id}`, data);
+        },
+        delete: async (id: string | number): Promise<AxiosResponse> => {
+            return await instance.delete(`/messages/${id}`);
+        },
     },
-    create: async (data: { conversation: string | number, content: string }): Promise<AxiosResponse> => {
-        return await instance.post('/messages/', data);
-    },
-    update: async (id: string | number, data: any): Promise<AxiosResponse> => {
-        return await instance.put(`/messages/${id}`, data);
-    },
-    delete: async (id: string | number): Promise<AxiosResponse> => {
-        return await instance.delete(`/messages/${id}`);
-    },
-},
     cart: {
         items: {
-            list: async (): Promise<AxiosResponse> => {
+            list: async (): Promise<AxiosResponse<DbCartItem[]>> => {
                 return await instance.get('/cart/items');
             },
-            add: async (data: any): Promise<AxiosResponse> => {
-                return await instance.post('/cart/items', data);
+            add: async (data: { product_id: string }): Promise<AxiosResponse<DbCartItem>> => {
+                const response = await instance.post('/cart/items', data);
+                return response.data;
             },
-            remove: async (itemId: number): Promise<AxiosResponse> => {
-                return await instance.delete(`/cart/items/${itemId}`);
+            remove: async (product_id: number): Promise<AxiosResponse> => {
+                return await instance.delete(`/cart/items/${product_id}`);
             },
         },
-        empty: async (): Promise<AxiosResponse> => {
-        return await instance.delete('/auth/cart/empty');
-    },
+        empty: async (): Promise<AxiosResponse<{ detail: string }>> => {
+            return await instance.delete('/auth/cart/empty');
+        },
     },
     orders: {
         list: async (): Promise<AxiosResponse> => {
@@ -240,26 +249,26 @@ const apiClient = {
     },
     checkout: {
         process: async (): Promise<AxiosResponse> => {
-        return await instance.post('/auth/checkout');
-    },
+            return await instance.post('/auth/checkout');
+        },
     },
     productImages: {
-    list: async (params?: any): Promise<AxiosResponse> => {
-        return await instance.get('/product-images/', { params });
+        list: async (params?: any): Promise<AxiosResponse> => {
+            return await instance.get('/product-images/', { params });
+        },
+        create: async (data: any): Promise<AxiosResponse> => {
+            return await instance.post('/product-images/', data);
+        },
+        detail: async (id: string | number): Promise<AxiosResponse> => {
+            return await instance.get(`/product-images/${id}`);
+        },
+        update: async (id: string | number, data: any): Promise<AxiosResponse> => {
+            return await instance.put(`/product-images/${id}`, data);
+        },
+        delete: async (id: string | number): Promise<AxiosResponse> => {
+            return await instance.delete(`/product-images/${id}`);
+        },
     },
-    create: async (data: any): Promise<AxiosResponse> => {
-        return await instance.post('/product-images/', data);
-    },
-    detail: async (id: string | number): Promise<AxiosResponse> => {
-        return await instance.get(`/product-images/${id}`);
-    },
-    update: async (id: string | number, data: any): Promise<AxiosResponse> => {
-        return await instance.put(`/product-images/${id}`, data);
-    },
-    delete: async (id: string | number): Promise<AxiosResponse> => {
-        return await instance.delete(`/product-images/${id}`);
-    },
-},
     admin: {
         users: {
             list: async (): Promise<AxiosResponse> => {

@@ -20,10 +20,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
     if (!isOpen || !product) return null
 
     const handleAddToCart = () => {
-        addToCart({ ...product })
-        toast(`${product.title} has been added to your cart.`)
-        openCart()
-        onClose()
+        const wasAdded = addToCart({ ...product })
+        if (wasAdded) {
+            toast.success(`${product.title} has been added to your cart.`)
+            openCart()
+            onClose()
+        }
     }
 
     return (

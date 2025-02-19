@@ -48,9 +48,11 @@ const HeroSection: React.FC = () => {
 
 
     const handleAddToCart = (product: Product) => {
-        addToCart({ ...product })
-        toast(`${product.title} has been added to your cart.`)
-        openCart()
+        const wasAdded = addToCart({ ...product })
+        if (wasAdded) {
+            toast.success(`${product.title} has been added to your cart.`)
+            openCart()
+        }
     }
 
     return (

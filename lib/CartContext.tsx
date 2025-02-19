@@ -3,6 +3,8 @@
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
 import type { ProductImage, Product } from "./apiClient"
+import { toast } from "sonner"
+
 interface CartItem {
     id: string
     title: string
@@ -12,7 +14,7 @@ interface CartItem {
 
 interface CartContextType {
     cart: CartItem[]
-    addToCart: (item: Product) => void
+    addToCart: (item: Product) => boolean
     removeFromCart: (id: string) => void
     clearCart: () => void
     getCartTotal: () => number
@@ -37,12 +39,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isCartOpen, setIsCartOpen] = useState(false)
 
     const addToCart = useCallback((item: Product) => {
-        setCart((prevCart) => [...prevCart, {
-            id: item.id,
-            title: item.title,
-            price: item.price,
-            images: item.images
-        }])
+        let wasAdded = false
+        setCart((prevCart) => {
+            const isDuplicate = prevCart.some(cartItem => cartItem.id === item.id)
+
+            if (isDuplicate) {
+                toast.error(`${item.title} is already in your cart`)
+                return prevCart
+            }
+
+            wasAdded = true
+            return [...prevCart, {
+                id: item.id,
+                title: item.title,
+                price: item.price,
+                images: item.images
+            }]
+        })
+        return wasAdded
     }, [])
 
     const removeFromCart = useCallback((id: string) => {
@@ -87,4 +101,3 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         </CartContext.Provider>
     )
 }
-
