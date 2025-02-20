@@ -2,19 +2,14 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
-import type { ProductImage, Product } from "./apiClient"
+import type { ProductImage, Product, DbCartItem } from "./apiClient"
 import { toast } from "sonner"
-
-interface CartItem {
-    id: string
-    title: string
-    price: number
-    images: ProductImage[]
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import apiClient from "./apiClient"
 
 interface CartContextType {
-    cart: CartItem[]
-    addToCart: (item: Product) => boolean
+    cart: DbCartItem[]
+    addToCart: (product: Product) => Promise<boolean>
     removeFromCart: (id: string) => void
     clearCart: () => void
     getCartTotal: () => number
@@ -22,6 +17,8 @@ interface CartContextType {
     isCartOpen: boolean
     openCart: () => void
     closeCart: () => void
+    isLoading: boolean
+    error: Error | null
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -35,40 +32,66 @@ export const useCart = () => {
 }
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [cart, setCart] = useState<CartItem[]>([])
     const [isCartOpen, setIsCartOpen] = useState(false)
+    const queryClient = useQueryClient()
 
-    const addToCart = useCallback((item: Product) => {
-        let wasAdded = false
-        setCart((prevCart) => {
-            const isDuplicate = prevCart.some(cartItem => cartItem.id === item.id)
+    // Fetch cart items
+    const { data: cart = [], isLoading, error } = useQuery<DbCartItem[]>({
+        queryKey: ['cart'],
+        queryFn: () => apiClient.cart.items.list().then(res => res.data)
+    })
 
-            if (isDuplicate) {
-                toast.error(`${item.title} is already in your cart`)
-                return prevCart
-            }
+    // Add to cart mutation
+    const addToCartMutation = useMutation({
+        mutationFn: (productId: string) => apiClient.cart.items.add({ product_id: productId }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] })
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Failed to add item to cart')
+        }
+    })
 
-            wasAdded = true
-            return [...prevCart, {
-                id: item.id,
-                title: item.title,
-                price: item.price,
-                images: item.images
-            }]
-        })
-        return wasAdded
-    }, [])
+    // Remove from cart mutation
+    const removeFromCartMutation = useMutation({
+        mutationFn: (productId: string) => apiClient.cart.items.remove(productId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] })
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Failed to remove item from cart')
+        }
+    })
+
+    // Clear cart mutation
+    const clearCartMutation = useMutation({
+        mutationFn: () => apiClient.cart.empty(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] })
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Failed to clear cart')
+        }
+    })
+    const addToCart = async (product: Product): Promise<boolean> => {
+        try {
+            await addToCartMutation.mutateAsync(product.id)
+            return true
+        } catch {
+            return false
+        }
+    }
 
     const removeFromCart = useCallback((id: string) => {
-        setCart((prevCart) => prevCart.filter((item) => item.id !== id))
-    }, [])
+        removeFromCartMutation.mutate(id)
+    }, [removeFromCartMutation])
 
     const clearCart = useCallback(() => {
-        setCart([])
-    }, [])
+        clearCartMutation.mutate()
+    }, [clearCartMutation])
 
     const getCartTotal = useCallback(() => {
-        return cart.reduce((total, item) => total + Number(item.price), 0)
+        return cart.reduce((total, item) => total + Number(item.product.price), 0)
     }, [cart])
 
     const getCartCount = useCallback(() => {
@@ -95,6 +118,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 isCartOpen,
                 openCart,
                 closeCart,
+                isLoading,
+                error: error as Error | null
             }}
         >
             {children}

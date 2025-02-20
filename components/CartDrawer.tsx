@@ -4,13 +4,23 @@ import type React from "react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/CartContext"
-import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react"
+import { Trash2, ShoppingCart, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 
 const CartDrawer: React.FC = () => {
-    const { cart, addToCart, removeFromCart, clearCart, getCartTotal, getCartCount, isCartOpen, openCart, closeCart } =
-        useCart()
+    const {
+        cart,
+        removeFromCart,
+        clearCart,
+        getCartTotal,
+        getCartCount,
+        isCartOpen,
+        openCart,
+        closeCart,
+        isLoading,
+        error
+    } = useCart()
 
     return (
         <Sheet open={isCartOpen} onOpenChange={closeCart}>
@@ -35,7 +45,13 @@ const CartDrawer: React.FC = () => {
                     <SheetTitle>Your Cart</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col h-full">
-                    {cart.length === 0 ? (
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                        </div>
+                    ) : error ? (
+                        <p className="text-center text-red-500 mt-4">Error loading cart</p>
+                    ) : cart.length === 0 ? (
                         <p className="text-center text-muted-foreground mt-4">Your cart is empty</p>
                     ) : (
                         <>
@@ -45,16 +61,16 @@ const CartDrawer: React.FC = () => {
                                         <div className="flex items-center">
                                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 mr-4">
                                                 <Image
-                                                    src={item.images[0].image_url || "/placeholder.svg"}
-                                                    alt={item.title}
+                                                    src={item.product.images[0]?.image_url || "/placeholder.svg"}
+                                                    alt={item.product.title}
                                                     width={64}
                                                     height={64}
                                                     className="h-full w-full object-cover object-center"
                                                 />
                                             </div>
                                             <div>
-                                                <h3 className="text-sm font-medium">{item.title}</h3>
-                                                <p className="text-sm text-muted-foreground">${item.price}</p>
+                                                <h3 className="text-sm font-medium">{item.product.title}</h3>
+                                                <p className="text-sm text-muted-foreground">${item.product.price}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
@@ -63,7 +79,7 @@ const CartDrawer: React.FC = () => {
                                                 size="icon"
                                                 onClick={() => {
                                                     removeFromCart(item.id)
-                                                    toast.success(`${item.title} removed from cart`)
+                                                    toast.success(`${item.product.title} removed from cart`)
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />

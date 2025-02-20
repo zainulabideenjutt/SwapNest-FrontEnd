@@ -5,9 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-// import { useCart } from "@/lib/CartContext";
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,8 +31,6 @@ const Header: React.FC = () => {
     const { openCart } = useCart();
     const router = useRouter();
     const [isScrolled, setIsScrolled] = useState(false);
-    // Optional: If you wish to show a cart count badge, you can manage a cartCount state.
-    const [cartCount] = useState(3); // Example cart count
     const logoutMutation = useMutation({
         mutationFn: () => apiClient.auth.logout(),
         onSuccess: () => {
@@ -55,8 +50,7 @@ const Header: React.FC = () => {
 
     return (
         <header
-            className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "backdrop-blur-md bg-background/80" : "bg-background"
-                }`}
+            className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "backdrop-blur-md bg-background/80" : "bg-background"}`}
         >
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo */}
@@ -66,20 +60,8 @@ const Header: React.FC = () => {
                     </Link>
                 </div>
 
-                {/* Desktop Search */}
-                <div className="hidden md:flex w-full max-w-sm mx-auto relative">
-                    <Input
-                        type="search"
-                        placeholder="Search products..."
-                        aria-label="Search products"
-                        className="w-full pl-10 pr-4 py-2 rounded-full border-none focus:ring-2 focus:ring-primary"
-                    />
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                </div>
-
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center space-x-4">
-                    {/* Profile Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -98,52 +80,67 @@ const Header: React.FC = () => {
                                 Profile
                             </DropdownMenuItem>
                             <DropdownMenuItem>Orders</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => logoutMutation.mutate()}>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                                {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <div onClick={openCart}>
-
                         <CartDrawer />
                     </div>
                 </div>
 
                 {/* Mobile Menu */}
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Open mobile menu"
-                            className="md:hidden hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                            <Menu className="h-5 w-5" />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left">
-                        <SheetHeader>
-                            <VisuallyHidden>
-                                <SheetTitle>Mobile Menu</SheetTitle>
-                            </VisuallyHidden>
-                        </SheetHeader>
-                        <div className="flex flex-col space-y-4 mt-4">
-                            <div className="flex">
-                                <Input
-                                    type="search"
-                                    placeholder="Search products..."
-                                    aria-label="Search products"
-                                    className="flex-grow"
-                                />
-                                <Button size="icon">
-                                    <Search className="h-5 w-5" />
+                <div className="flex items-center space-x-2 md:hidden">
+                    <div onClick={openCart}>
+                        <CartDrawer />
+                    </div>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Open mobile menu"
+                                className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                            >
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                            <SheetHeader className="border-b pb-4 mb-4">
+                                <SheetTitle className="text-left">Menu</SheetTitle>
+                            </SheetHeader>
+                            <div className="flex flex-col space-y-2">
+                                <div className="flex items-center p-2 rounded-lg hover:bg-accent">
+                                    <User className="h-4 w-4 mr-2" />
+                                    <span className="text-sm font-medium">My Account</span>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start"
+                                    onClick={() => router.push("/profile")}
+                                >
+                                    Profile
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start"
+                                    onClick={() => router.push("/orders")}
+                                >
+                                    Orders
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    onClick={() => logoutMutation.mutate()}
+                                    disabled={logoutMutation.isPending}
+                                >
+                                    {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
                                 </Button>
                             </div>
-                            <Button variant="ghost" onClick={() => router.push("/profile")}>
-                                Profile
-                            </Button>
-                            <CartDrawer />
-                        </div>
-                    </SheetContent>
-                </Sheet>
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
         </header>
     );

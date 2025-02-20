@@ -47,8 +47,8 @@ const HeroSection: React.FC = () => {
     const featuredProducts = useMemo(() => Products, [Products])
 
 
-    const handleAddToCart = (product: Product) => {
-        const wasAdded = addToCart({ ...product })
+    const handleAddToCart = async (product: Product) => {
+        const wasAdded = await addToCart(product)
         if (wasAdded) {
             toast.success(`${product.title} has been added to your cart.`)
             openCart()

@@ -16,7 +16,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <QueryClientProvider client={queryClient}>
           <CartProvider >
-
             <Toaster />
             {children}
           </CartProvider>

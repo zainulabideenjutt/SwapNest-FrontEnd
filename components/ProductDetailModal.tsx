@@ -19,8 +19,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
 
     if (!isOpen || !product) return null
 
-    const handleAddToCart = () => {
-        const wasAdded = addToCart({ ...product })
+    const handleAddToCart = async () => {
+        const wasAdded = await addToCart(product)
         if (wasAdded) {
             toast.success(`${product.title} has been added to your cart.`)
             openCart()

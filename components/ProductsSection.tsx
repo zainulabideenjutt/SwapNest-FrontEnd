@@ -75,8 +75,8 @@ const ProductsSection: React.FC = () => {
     }, [])
 
     const handleAddToCart = useCallback(
-        (product: Product) => {
-            const wasAdded = addToCart({ ...product })
+        async (product: Product) => {
+            const wasAdded = await addToCart(product)
             if (wasAdded) {
                 toast.success(`${product.title} added to cart`)
                 openCart()

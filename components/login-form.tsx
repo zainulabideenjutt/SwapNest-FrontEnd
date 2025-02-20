@@ -9,22 +9,39 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import apiClient, { LoginDataTypes } from '@/lib/apiClient';
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter();
+
+  // Check if user is already authenticated
+  const { data: authData } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => apiClient.auth.isAuthenticated(),
+    retry: false
+  });
+
+  useEffect(() => {
+    if (authData?.data?.success) {
+      router.push('/');
+      toast.error('You are already logged in');
+    }
+  }, [authData, router]);
+
   const [formData, setFormData] = useState<LoginDataTypes>({ email: '', password: '' });
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: (data: LoginDataTypes) => apiClient.auth.login(data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success('Login successful!');
       router.push('/');
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Login failed');
     }
   });
 
