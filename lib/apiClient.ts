@@ -69,22 +69,6 @@ export interface RegisterDataTypes {
     contact_details?: string;
     role?: string;
 }
-export interface CreateProduct {
-    seller: string;
-    title: string;
-    description: string;
-    price: number;
-    condition: "New" | "Used";
-    location?: string | null;
-}
-export interface ProductImage {
-    id: string;
-    product: string;
-    image_url: string;
-    caption: string;
-    order: number;
-    created_at: string;
-}
 
 export interface CreateCategory {
     name: string;
@@ -96,6 +80,15 @@ export interface Category extends CreateCategory {
     updated_at: string; // ISO date string
 }
 
+export interface CreateProduct {
+    title: string;
+    description: string;
+    price: number;
+    condition: "New" | "Used";
+    location?: string | null;
+    category_id: string;
+    images: [] //Actual images sent as base64 encoded strings
+}
 
 export interface Product {
     id: string;
@@ -111,9 +104,19 @@ export interface Product {
     bought_by?: string | null;
     created_at?: string;
     updated_at?: string;
-    images: ProductImage[];
+    images: ProductImageResponse[];
 }
 
+export interface CreateProductImage {
+    product: string;
+    image_url: string;
+    caption: string;
+    order: number;
+}
+export interface ProductImageResponse extends CreateProductImage {
+    id: string;
+    created_at: string;
+}
 export interface DbCartItem {
     id: string;
     product: Product;
@@ -155,7 +158,7 @@ const apiClient = {
             return await instance.get(`/products/${id}`);
         },
         create: async (data: CreateProduct): Promise<AxiosResponse<Product>> => {
-            return await instance.post('/products', data);
+            return await instance.post('/products/', data);
         },
         update: async (id: string, data: any): Promise<AxiosResponse<Product>> => {
             return await instance.put(`/products/${id}`, data);

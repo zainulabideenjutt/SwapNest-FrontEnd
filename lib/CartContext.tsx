@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
-import type { ProductImage, Product, DbCartItem } from "./apiClient"
+import type { Product, DbCartItem } from "./apiClient"
 import { toast } from "sonner"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import apiClient from "./apiClient"

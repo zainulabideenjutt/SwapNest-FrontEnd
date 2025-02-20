@@ -17,24 +17,9 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter();
-
-  // Check if user is already authenticated
-  const { data: authData } = useQuery({
-    queryKey: ['isAuthenticated'],
-    queryFn: () => apiClient.auth.isAuthenticated(),
-    retry: false
-  });
-
-  useEffect(() => {
-    if (authData?.data?.success) {
-      router.push('/');
-      toast.error('You are already logged in');
-    }
-  }, [authData, router]);
-
   const [formData, setFormData] = useState<LoginDataTypes>({ email: '', password: '' });
 
-  const { mutate, isPending, isError, error } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (data: LoginDataTypes) => apiClient.auth.login(data),
     onSuccess: (response) => {
       toast.success('Login successful!');

@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["cdn.thewirecutter.com", "via.placeholder.com","images.unsplash.com","powerhouseexpress.com.pk","m.media-amazon.com"], // Add all required domains here
+    domains: ["cdn.thewirecutter.com", "via.placeholder.com", "images.unsplash.com", "powerhouseexpress.com.pk", "m.media-amazon.com", "localhost"], // Add all required domains here
   },
 };
 
