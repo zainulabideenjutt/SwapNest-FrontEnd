@@ -1,32 +1,21 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
+import { error } from 'console';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
 const instance: AxiosInstance = axios.create({
+
     baseURL: API_BASE_URL,
-    withCredentials: true
+    withCredentials: true,
 });
 
 let isRefreshing = false;
 
 instance.interceptors.response.use(
     response => response,
-    async (error: AxiosError) => {
-        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshing) {
-            isRefreshing = true;
-            try {
-                await instance.post('/auth/token/refresh');
-                isRefreshing = false;
-                originalRequest._retry = true;
-                return instance(originalRequest);
-            } catch {
-                isRefreshing = false;
-            }
-        }
-        return Promise.reject(error);
-    }
+    error => Promise.reject(error)
 );
+
 
 
 
@@ -42,10 +31,28 @@ interface BaseUserResponse {
     is_active: boolean;
     created_at: string;
     updated_at: string;
-    listings: any[];
-    purchased_products: any[];
-    reports: any[];
+    listings: Product[];
+    purchased_products: Product[];
+    reports: Report[];
 }
+export interface Report {
+    id: string;
+    reporter: string;
+    product: string;
+    reported_user: string;
+    reason: string;
+    description: string;
+    created_at: string;
+    status: "Pending" | "Approved" | "Rejected"; // Adjust based on possible statuses
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+}
+export interface CreateReport {
+    product: string;
+    reason: string;
+    description: string;
+}
+
 
 export interface RegisterResponse extends BaseUserResponse { }
 export interface ProfileResponse extends BaseUserResponse { }
@@ -142,12 +149,16 @@ const apiClient = {
         passwordReset: async (data: { email: string }): Promise<AxiosResponse<{ detail: string }>> => {
             return await instance.post('/auth/password-reset', data);
         },
-        isAuthenticated: async (): Promise<AxiosResponse<{ success: boolean }>> => {
+        isAuthenticated: async (): Promise<{ success: boolean, user: string }> => {
             return await instance.get('/auth/is-authenticated');
         },
         profile: async (): Promise<AxiosResponse<ProfileResponse>> => {
             return await instance.get('/auth/profile');
         },
+        updateProfile: async (data: any): Promise<AxiosResponse<ProfileResponse>> => {
+            return await instance.patch('/auth/profile');
+        },
+
     },
     products: {
         list: async (): Promise<Product[]> => {
@@ -195,7 +206,7 @@ const apiClient = {
         list: async (): Promise<AxiosResponse> => {
             return await instance.get('/reports');
         },
-        create: async (data: { product_id: string }): Promise<AxiosResponse> => {
+        create: async (data: CreateReport): Promise<Report> => {
             return await instance.post('/reports', data);
         },
         update: async (id: string | number, data: any): Promise<AxiosResponse> => {

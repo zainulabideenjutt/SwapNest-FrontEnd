@@ -7,8 +7,11 @@ import { useCart } from "@/lib/CartContext"
 import { Trash2, ShoppingCart, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
+import apiClient from "@/lib/apiClient"
+import { useMutation, useQueryClient } from "@tanstack/react-query"  // Add useQueryClient
 
 const CartDrawer: React.FC = () => {
+    const queryClient = useQueryClient();  // Add this line
     const {
         cart,
         removeFromCart,
@@ -21,6 +24,20 @@ const CartDrawer: React.FC = () => {
         isLoading,
         error
     } = useCart()
+    // implement checkout with apiClient.checkout.process post method with react query
+    const checkout = useMutation({
+        mutationFn: () => apiClient.checkout.process(),
+        onSuccess: () => {
+            toast.success("Checkout successful");
+            closeCart();
+            clearCart();
+            // Invalidate and refetch products
+            queryClient.invalidateQueries({ queryKey: ['Products'] });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || "Checkout failed")
+        }
+    });
 
     return (
         <Sheet open={isCartOpen} onOpenChange={closeCart}>
@@ -97,6 +114,7 @@ const CartDrawer: React.FC = () => {
                                     className="w-full"
                                     onClick={() => {
                                         toast.success("Proceeding to checkout")
+                                        checkout.mutate()
                                         closeCart()
                                     }}
                                 >

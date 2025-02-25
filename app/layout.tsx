@@ -6,6 +6,7 @@ import React from "react";
 import { Toaster } from 'sonner';
 import EcommerceHeader from "@/components/Header";
 import 'app/globals.css'
+import { AuthProvider } from '@/lib/contexts/AuthContext';
 import { CartProvider } from "@/lib/CartContext"
 // Create a client
 const queryClient = new QueryClient();
@@ -15,10 +16,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <QueryClientProvider client={queryClient}>
-          <CartProvider >
-            <Toaster />
-            {children}
-          </CartProvider>
+          <AuthProvider>
+            <CartProvider >
+              <Toaster />
+              {children}
+            </CartProvider>
+          </AuthProvider>
         </QueryClientProvider>
       </body>
     </html>

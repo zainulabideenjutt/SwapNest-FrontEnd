@@ -11,17 +11,21 @@ import apiClient, { LoginDataTypes } from '@/lib/apiClient';
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+// Add useAuth import
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState<LoginDataTypes>({ email: '', password: '' });
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: LoginDataTypes) => apiClient.auth.login(data),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
+      await login(response.data.access_token);
       toast.success('Login successful!');
       router.push('/');
     },
