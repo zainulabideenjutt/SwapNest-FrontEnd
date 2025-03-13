@@ -20,6 +20,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { useAuth } from "@/lib/contexts/AuthContext";
 import { User, Menu, Search, ShoppingCart } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useCart } from "@/lib/CartContext"
@@ -29,15 +30,10 @@ import { toast } from 'sonner'
 import apiClient from "@/lib/apiClient";
 const Header: React.FC = () => {
     const { openCart } = useCart();
+    const { logout, isAuthenticated, isLoading } = useAuth();  // Add this line to get logout from AuthContext
     const router = useRouter();
     const [isScrolled, setIsScrolled] = useState(false);
-    const logoutMutation = useMutation({
-        mutationFn: () => apiClient.auth.logout(),
-        onSuccess: () => {
-            toast.success('Logged out successfully');
-            router.push('/login');
-        },
-    });
+
     const handleScroll = useCallback(() => {
         setIsScrolled(window.scrollY > 50);
     }, []);
@@ -80,8 +76,8 @@ const Header: React.FC = () => {
                                 Profile
                             </DropdownMenuItem>
                             <DropdownMenuItem>Orders</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
-                                {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+                            <DropdownMenuItem onClick={() => logout()}>
+                                {isLoading ? 'Logging out...' : 'Logout'}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -132,10 +128,10 @@ const Header: React.FC = () => {
                                 <Button
                                     variant="ghost"
                                     className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
-                                    onClick={() => logoutMutation.mutate()}
-                                    disabled={logoutMutation.isPending}
+                                    onClick={() => logout}
+                                    disabled={isLoading}
                                 >
-                                    {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+                                    {isLoading ? 'Logging out...' : 'Logout'}
                                 </Button>
                             </div>
                         </SheetContent>
