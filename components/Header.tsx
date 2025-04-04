@@ -75,6 +75,9 @@ const Header: React.FC = () => {
                             <DropdownMenuItem onSelect={() => router.push("/profile")}>
                                 Profile
                             </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => router.push("/products")}>
+                                Add Product
+                            </DropdownMenuItem>
                             <DropdownMenuItem>Orders</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => logout()}>
                                 {isLoading ? 'Logging out...' : 'Logout'}
@@ -117,6 +120,13 @@ const Header: React.FC = () => {
                                     onClick={() => router.push("/profile")}
                                 >
                                     Profile
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start"
+                                    onClick={() => router.push("/products")}
+                                >
+                                    Add Product
                                 </Button>
                                 <Button
                                     variant="ghost"

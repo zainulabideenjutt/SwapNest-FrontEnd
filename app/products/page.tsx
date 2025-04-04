@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import Link from "next/link"
 import React, { useState, useEffect } from 'react'
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
@@ -126,6 +127,15 @@ export default function Page() {
             <main className="container mx-auto px-4 py-8">
                 <div className="max-w-2xl mx-auto">
                     <h1 className="text-2xl font-bold mb-6">Create New Product</h1>
+                    <Link
+                        href="/"
+                        className="text-primary hover:text-primary/80 mb-4 inline-flex items-center"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back to Home
+                    </Link>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="title">Title</Label>
